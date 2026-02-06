@@ -1,4 +1,8 @@
-// Crear mapa base
+// =========================
+// Mapa base con Leaflet
+// =========================
+
+// Crear mapa base centrado en tu zona
 var map = L.map('map').setView([-22.4686, -69.0143], 10);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -6,7 +10,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
-// Cargar polígono/shape del sitio (GeoJSON)
+// Cargar polígono/shape del sitio (GeoJSON) desde RSS_aoi.geojson
 fetch('RSS_aoi.geojson')
   .then(response => response.json())
   .then(geojson => {
@@ -18,30 +22,45 @@ fetch('RSS_aoi.geojson')
       }
     }).addTo(map);
     map.fitBounds(layer.getBounds());
-  });
+  })
+  .catch(err => console.error('Error cargando GeoJSON:', err));
 
-// Función para parsear fecha tipo "Apr 29, 2017" y devolver string ISO
+
+// =========================
+// Lectura de CSV y gráfico NDVI
+// =========================
+
+// Parsear fecha tipo "Apr 29, 2017" a string "YYYY-MM-DD"
 function parseFecha(str) {
   if (!str) return null;
-  str = str.replace(/"/g, '').trim();   // "Apr 29, 2017" -> Apr 29, 2017
+  str = str.replace(/"/g, '').trim();  // quitar comillas
   var d = new Date(str);
   if (isNaN(d.getTime())) return null;
-  // convertir a YYYY-MM-DD
   var year = d.getFullYear();
   var month = String(d.getMonth() + 1).padStart(2, '0');
   var day = String(d.getDate()).padStart(2, '0');
   return year + '-' + month + '-' + day;
 }
 
-// Leer CSV grafico.csv (system:time_start,NDVI)
+// Leer CSV simple (system:time_start,NDVI)
 function cargarCSV(url, callback) {
   fetch(url)
     .then(response => response.text())
     .then(text => {
       var lines = text.trim().split('\n');
+      if (lines.length < 2) {
+        console.error('CSV sin datos');
+        callback([], []);
+        return;
+      }
+
       var header = lines[0].split(',');
+      console.log('Header:', header);
+
       var timeIdx = header.indexOf('system:time_start');
       var ndviIdx = header.indexOf('NDVI');
+
+      console.log('timeIdx:', timeIdx, 'ndviIdx:', ndviIdx);
 
       var fechas = [];
       var ndvi = [];
@@ -54,19 +73,21 @@ function cargarCSV(url, callback) {
         var valor = parseFloat(cols[ndviIdx]);
 
         if (fecha && !isNaN(valor)) {
-        fechas.push(fecha);   // ahora es string '2020-05-29'
-        ndvi.push(valor);     // ~0.26
+          fechas.push(fecha);   // 'YYYY-MM-DD'
+          ndvi.push(valor);     // ~0.2
+        }
       }
 
       console.log('Ejemplo fechas:', fechas[0], 'NDVI[0]:', ndvi[0]);
       console.log('Fechas cargadas:', fechas.length, 'NDVI:', ndvi.length);
+
       callback(fechas, ndvi);
     })
     .catch(err => console.error('Error fetch CSV:', err));
 }
 
-// Crear gráfico NDVI
-cargarCSV('grafico.csv', function(fechas, ndvi) {
+// Crear gráfico NDVI desde grafico.csv
+cargarCSV('grafico.csv', function (fechas, ndvi) {
   var umbral = 0.2;
 
   var trace = {
@@ -81,22 +102,22 @@ cargarCSV('grafico.csv', function(fechas, ndvi) {
     line: { color: 'darkgreen' }
   };
 
- var layout = {
-  title: 'Variación temporal del NDVI en el área de estudio',
-  xaxis: { title: 'Fecha', type: 'date' },
-  yaxis: { title: 'NDVI', range: [0, 0.4] },
-  shapes: [
-    {
-      type: 'line',
-      xref: 'paper',
-      x0: 0,
-      x1: 1,
-      y0: umbral,
-      y1: umbral,
-      line: { color: 'red', width: 2, dash: 'dash' }
-    }
-  ]
-};
+  var layout = {
+    title: 'Variación temporal del NDVI en el área de estudio',
+    xaxis: { title: 'Fecha', type: 'date' },
+    yaxis: { title: 'NDVI', range: [0, 0.4] },
+    shapes: [
+      {
+        type: 'line',
+        xref: 'paper',
+        x0: 0,
+        x1: 1,
+        y0: umbral,
+        y1: umbral,
+        line: { color: 'red', width: 2, dash: 'dash' }
+      }
+    ]
+  };
 
   Plotly.newPlot('chart', [trace], layout);
 });
