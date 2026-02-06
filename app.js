@@ -7,7 +7,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 // Cargar polígono/shape del sitio (GeoJSON)
-fetch('data/sitio_ndvi.geojson')
+fetch('RSS_aoi.geojson')
   .then(response => response.json())
   .then(geojson => {
     var layer = L.geoJSON(geojson, {
@@ -48,7 +48,7 @@ function cargarCSV(url, callback) {
 }
 
 // Crear gráfico NDVI
-cargarCSV('data/ndvi_sitio.csv', function(fechas, ndvi) {
+cargarCSV('grafico.csv', function(fechas, ndvi) {
   var umbral = 0.2;
 
   var trace = {
