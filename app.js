@@ -20,11 +20,17 @@ fetch('RSS_aoi.geojson')
     map.fitBounds(layer.getBounds());
   });
 
-// Función para parsear fecha tipo "Apr 29, 2017"
+// Función para parsear fecha tipo "Apr 29, 2017" y devolver string ISO
 function parseFecha(str) {
-  if (!str) return NaN;
-  str = str.replace(/"/g, '').trim();
-  return new Date(str);
+  if (!str) return null;
+  str = str.replace(/"/g, '').trim();   // "Apr 29, 2017" -> Apr 29, 2017
+  var d = new Date(str);
+  if (isNaN(d.getTime())) return null;
+  // convertir a YYYY-MM-DD
+  var year = d.getFullYear();
+  var month = String(d.getMonth() + 1).padStart(2, '0');
+  var day = String(d.getDate()).padStart(2, '0');
+  return year + '-' + month + '-' + day;
 }
 
 // Leer CSV grafico.csv (system:time_start,NDVI)
@@ -47,10 +53,9 @@ function cargarCSV(url, callback) {
         var fecha = parseFecha(cols[timeIdx]);
         var valor = parseFloat(cols[ndviIdx]);
 
-        if (!isNaN(fecha.getTime()) && !isNaN(valor)) {
-          fechas.push(fecha);
-          ndvi.push(valor);
-        }
+        if (fecha && !isNaN(valor)) {
+        fechas.push(fecha);   // ahora es string '2020-05-29'
+        ndvi.push(valor);     // ~0.26
       }
 
       console.log('Ejemplo fechas:', fechas[0], 'NDVI[0]:', ndvi[0]);
@@ -79,10 +84,7 @@ cargarCSV('grafico.csv', function(fechas, ndvi) {
  var layout = {
   title: 'Variación temporal del NDVI en el área de estudio',
   xaxis: { title: 'Fecha', type: 'date' },
-  yaxis: {
-    title: 'NDVI',
-    range: [0, 0.4]       // fuerza NDVI entre 0 y 0.4
-  },
+  yaxis: { title: 'NDVI', range: [0, 0.4] },
   shapes: [
     {
       type: 'line',
