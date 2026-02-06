@@ -66,6 +66,8 @@ function cargarCSV(url, callback) {
 cargarCSV('grafico.csv', function(fechas, ndvi) {
   var umbral = 0.2;
 
+  console.log('Ejemplo fechas:', fechas[0], 'NDVI[0]:', ndvi[0]);
+
   var trace = {
     x: fechas,
     y: ndvi,
@@ -77,6 +79,8 @@ cargarCSV('grafico.csv', function(fechas, ndvi) {
     },
     line: { color: 'darkgreen' }
   };
+  ...
+});
 
   var layout = {
   title: 'Variación temporal del NDVI en el área de estudio',
