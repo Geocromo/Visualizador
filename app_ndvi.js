@@ -106,21 +106,27 @@ cargarCSV('grafico.csv', function (fechas, ndvi) {
   };
 
   var layout = {
-    title: 'Variación temporal del NDVI en el área de estudio',
-    xaxis: { title: 'Fecha', type: 'date' },
-    yaxis: { title: 'NDVI', range: [0, 0.4] },
-    shapes: [
-      {
-        type: 'line',
-        xref: 'paper',
-        x0: 0,
-        x1: 1,
-        y0: umbral,
-        y1: umbral,
-        line: { color: 'red', width: 2, dash: 'dash' }
-      }
-    ]
-  };
+  title: 'Variación temporal del NDVI en el área de estudio',
+  xaxis: {
+    title: 'Fecha',
+    type: 'date'
+  },
+  yaxis: {
+    title: 'NDVI',
+    range: [0, 0.4]
+  },
+  shapes: [
+    {
+      type: 'line',
+      xref: 'paper',
+      x0: 0,
+      x1: 1,
+      y0: umbral,
+      y1: umbral,
+      line: { color: 'red', width: 2, dash: 'dash' }
+    }
+  ]
+};
 
   Plotly.newPlot('chart', [trace], layout);
 });
