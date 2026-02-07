@@ -57,20 +57,24 @@ function cargarCSV(url, callback) {
       var header = lines[0].split(',');
       console.log('Header:', header);
 
-      var timeIdx = header.indexOf('system:time_start');
-      var ndviIdx = header.indexOf('NDVI');
-
-      console.log('timeIdx:', timeIdx, 'ndviIdx:', ndviIdx);
-
       var fechas = [];
       var ndvi = [];
 
       for (var i = 1; i < lines.length; i++) {
         var cols = lines[i].split(',');
-        if (cols.length < 2) continue;
 
-        var fecha = parseFecha(cols[timeIdx]);
-        var valor = parseFloat(cols[ndviIdx]);
+        // armar objeto fila {columna: valor}
+        var row = {};
+        header.forEach((name, idx) => {
+          row[name] = cols[idx];
+        });
+
+        // usar SIEMPRE estos nombres de columna:
+        var fechaStr = row['system:time_start'];
+        var ndviStr  = row['NDVI'];
+
+        var fecha = parseFecha(fechaStr);
+        var valor = parseFloat(ndviStr);
 
         if (fecha && !isNaN(valor)) {
           fechas.push(fecha);   // 'YYYY-MM-DD'
@@ -82,9 +86,6 @@ function cargarCSV(url, callback) {
       console.log('Fechas cargadas:', fechas.length, 'NDVI:', ndvi.length);
 
       callback(fechas, ndvi);
-      console.log('Ejemplo fechas:', fechas[0], 'NDVI[0]:', ndvi[0]);
-      console.log('Fechas cargadas:', fechas.length, 'NDVI:', ndvi.length);
-
     })
     .catch(err => console.error('Error fetch CSV:', err));
 }
