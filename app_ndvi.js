@@ -82,6 +82,9 @@ function cargarCSV(url, callback) {
       console.log('Fechas cargadas:', fechas.length, 'NDVI:', ndvi.length);
 
       callback(fechas, ndvi);
+      console.log('Ejemplo fechas:', fechas[0], 'NDVI[0]:', ndvi[0]);
+      console.log('Fechas cargadas:', fechas.length, 'NDVI:', ndvi.length);
+
     })
     .catch(err => console.error('Error fetch CSV:', err));
 }
